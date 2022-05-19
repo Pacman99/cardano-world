@@ -1,20 +1,57 @@
 {
   description = "Cardano World";
-  inputs.std.url = "github:divnix/std";
-  inputs.n2c.url = "github:nlewo/nix2container";
-  inputs.data-merge.url = "github:divnix/data-merge";
+
   inputs = {
+    std = {
+      url = "github:divnix/std";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    n2c.url = "github:nlewo/nix2container";
+    haskellNix = {
+      url = "github:input-output-hk/haskell.nix";
+      inputs.hackage.follows = "hackageNix";
+      inputs.nixpkgs.follows = "nixpkgs-haskell";
+    };
+    hackageNix = {
+      url = "github:input-output-hk/hackage.nix";
+      flake = false;
+    };
+    iohkNix = {
+      url = "github:input-output-hk/iohk-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    data-merge.url = "github:divnix/data-merge";
+    byron-chain = {
+      url = "github:input-output-hk/cardano-mainnet-mirror";
+      flake = false;
+    };
     # --- Bitte Stack ----------------------------------------------
     bitte.url = "github:input-output-hk/bitte";
-    bitte-cells.url = "github:input-output-hk/bitte-cells";
+    bitte-cells = {
+      url = "github:input-output-hk/bitte-cells/conditional-glibcLocales";
+      inputs = {
+        std.follows = "std";
+        nixpkgs.follows = "nixpkgs";
+        n2c.follows = "n2c";
+        data-merge.follows = "data-merge";
+        cardano-iohk-nix.follows = "iohkNix";
+        cardano-node.follows = "cardano-node";
+        cardano-db-sync.follows = "cardano-db-sync";
+        cardano-wallet.follows = "cardano-wallet";
+      };
+    };
     # --------------------------------------------------------------
     # --- Auxiliaries ----------------------------------------------
     nixpkgs.url = "github:nixos/nixpkgs/nixos-22.05";
+    nixpkgs-haskell.follows = "haskellNix/nixpkgs-unstable";
     capsules.url = "github:input-output-hk/devshell-capsules";
     # --------------------------------------------------------------
     # --- Bride Heads ----------------------------------------------
-    # TODO: remove when moved to monorepo
-    cardano-node.url = "github:input-output-hk/cardano-node";
+    # TODO: remove cardano-node (and use self) when mono-repo branch is merged:
+    cardano-node = {
+      url = "github:input-output-hk/cardano-node";
+      flake = false;
+    };
     cardano-db-sync.url = "github:input-output-hk/cardano-db-sync/13.0.0-rc2";
     cardano-wallet.url = "github:input-output-hk/cardano-wallet";
     cardano-ogmios.url = "github:input-output-hk/cardano-ogmios/vasil";
@@ -40,6 +77,7 @@
         (inputs.std.functions "nomadJob")
         (inputs.std.functions "oci-images")
         (inputs.std.installables "packages")
+        (inputs.std.functions "prepare-mono-repo")
         (inputs.std.runnables "entrypoints")
         (inputs.std.runnables "healthChecks")
         # automation
