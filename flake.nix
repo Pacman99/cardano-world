@@ -58,6 +58,7 @@
     # --------------------------------------------------------------
   };
   outputs = inputs: let
+    inherit (inputs.nixpkgs) lib;
     nomadEnvs = inputs.self.${system}.cloud.nomadEnvs;
     system = "x86_64-linux";
   in
@@ -77,6 +78,7 @@
         (inputs.std.functions "nomadJob")
         (inputs.std.functions "oci-images")
         (inputs.std.installables "packages")
+        (inputs.std.functions "hydraJobs")
         (inputs.std.functions "prepare-mono-repo")
         (inputs.std.runnables "entrypoints")
         (inputs.std.runnables "healthChecks")
@@ -109,7 +111,22 @@
       infra = inputs.bitte.lib.mkNomadJobs "infra" nomadEnvs;
       vasil-qa = inputs.bitte.lib.mkNomadJobs "vasil-qa" nomadEnvs;
       vasil-dev = inputs.bitte.lib.mkNomadJobs "vasil-dev" nomadEnvs;
-    };
+    }
+    # 3) hydra jobs
+    (let
+      jobs = lib.filterAttrsRecursive (n: _: n != "recurseForDerivations") (
+        lib.mapAttrs (n: lib.mapAttrs (_: cell: cell.hydraJobs or {})) {
+        # systems with hydra builders:
+        inherit (inputs.self) x86_64-linux x86_64-darwin;
+      });
+      requiredJobs = lib.filterAttrsRecursive (n: v: n == "required" || !(lib.isDerivation v)) jobs;
+      required = inputs.self.x86_64-linux.automation.jobs.mkHydraRequiredJob [] requiredJobs;
+     in {
+       hydraJobs = jobs // {
+         inherit required;
+       };
+     }
+    );
   # --- Flake Local Nix Configuration ----------------------------
   nixConfig = {
     extra-substituters = [

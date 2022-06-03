@@ -145,6 +145,15 @@ in {
   shell-check = nixpkgs.callPackage inputs.iohkNix.checks.shell {
     src = inputs.self;
   };
+  mkHydraRequiredJob = nonRequiredPaths: jobs: nixpkgs.releaseTools.aggregate {
+    name = "github-required";
+    meta.description = "All jobs required to pass CI";
+    constituents = lib.collect lib.isDerivation
+      (lib.mapAttrsRecursiveCond (v: !(lib.isDerivation v))
+        (path: value:
+          let stringPath = lib.concatStringsSep "." path; in if lib.isAttrs value && (lib.any (p: p stringPath) nonRequiredPaths) then { } else value)
+        jobs);
+  };
   # run-local-node = let
   #   envName = "testnet";
   #   config =
