@@ -35,7 +35,6 @@
         n2c.follows = "n2c";
         data-merge.follows = "data-merge";
         cardano-iohk-nix.follows = "iohkNix";
-        cardano-node.follows = "cardano-node";
         cardano-db-sync.follows = "cardano-db-sync";
         cardano-wallet.follows = "cardano-wallet";
       };
@@ -47,11 +46,6 @@
     capsules.url = "github:input-output-hk/devshell-capsules";
     # --------------------------------------------------------------
     # --- Bride Heads ----------------------------------------------
-    # TODO: remove cardano-node (and use self) when mono-repo branch is merged:
-    cardano-node = {
-      url = "github:input-output-hk/cardano-node";
-      flake = false;
-    };
     cardano-db-sync.url = "github:input-output-hk/cardano-db-sync/13.0.0-rc2";
     cardano-wallet.url = "github:input-output-hk/cardano-wallet";
     cardano-ogmios.url = "github:input-output-hk/cardano-ogmios/vasil";

@@ -39,14 +39,9 @@ haskell-nix.cabalProject' ({ pkgs
         name = "cardano-node-src";
         filter = path: type:
           let relPath = lib.removePrefix "${src.outPath}/" path; in
-          # excludes directories not part of cabal project:
-          (type != "directory" || (builtins.match ".*/.*" relPath != null) || (!(lib.elem relPath [
-            "nix"
-            "doc"
-            "docs"
-          ]) && !(lib.hasPrefix "." relPath)))
-          # only keep cabal.project from files at root:
-          && (type == "directory" || builtins.match ".*/.*" relPath != null || (relPath == "cabal.project"))
+          # only keep cabal.project and directories under src:
+          (relPath == "cabal.project" || relPath == "src" || (type == "directory" && (builtins.match "src/.*" relPath != null))
+            || (builtins.match "src/.*/.*" relPath != null))
           && (lib.cleanSourceFilter path type)
           && (haskell-nix.haskellSourceFilter path type)
           && !(lib.hasSuffix ".gitignore" relPath)
@@ -64,7 +59,7 @@ haskell-nix.cabalProject' ({ pkgs
       shell = {
         name = "cabal-dev-shell";
 
-        packages = ps: builtins.attrValues (haskellLib.selectProjectPackages ps);
+        packages = ps: builtins.attrValues (haskellLib.selectLocalPackages ps);
 
         # These programs will be available inside the nix-shell.
         nativeBuildInputs = with pkgs.buildPackages.buildPackages; [
@@ -128,6 +123,7 @@ haskell-nix.cabalProject' ({ pkgs
             packages.cardano-tracer.package.buildable = with pkgs.stdenv.hostPlatform; isUnix && !isMusl;
             packages.plutus-preprocessor.package.buildable = with pkgs.stdenv.hostPlatform; isUnix && !isMusl;
             packages.cardano-node-chairman.components.tests.chairman-tests.buildable = lib.mkForce pkgs.stdenv.hostPlatform.isUnix;
+            packages.cardano-ledger-byron.components.tests.cardano-ledger-byron-test.buildable = lib.mkForce (with pkgs.stdenv.hostPlatform; isUnix && !isMusl);
             packages.plutus-tx-plugin.components.library.platforms = with lib.platforms; [ linux darwin ];
           })
           ({ pkgs, ... }: {

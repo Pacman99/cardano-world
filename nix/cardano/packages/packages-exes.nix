@@ -49,12 +49,12 @@
   ];
   cardano-tracer = [
     "cardano-tracer"
-    "demo-acceptor"
-    "demo-forwarder"
+    "cardano-tracer-demo-acceptor"
+    "cardano-tracer-demo-forwarder"
   ];
   ekg-forward = [
-    #"demo-acceptor"
-    #"demo-forwarder"
+    "ekg-forward-demo-acceptor"
+    "ekg-forward-demo-forwarder"
   ];
   ledger-state = [
     "ledger-state"

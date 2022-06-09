@@ -3,7 +3,7 @@
 ,
 }:
 let
-  inherit (inputs) self std nixpkgs iohkNix cardano-node
+  inherit (inputs) self std nixpkgs iohkNix
     cardano-wallet cardano-db-sync cardano-ogmios;
   inherit (inputs.cells) cardano;
   inherit (nixpkgs) lib;
@@ -29,8 +29,7 @@ let
     (import ./haskell.nix {
       inherit haskell-nix;
       inherit (inputs) byron-chain;
-      # TODO: switch to self after mono-repo branch is merged:
-      src = cardano-node;
+      src = self;
     }).appendOverlays [
       devshell
       projectComponents
@@ -83,7 +82,7 @@ let
                   let
                     # setGitRev is a script to stamp executables with version info.
                     # Done here to avoid tests depending on rev.
-                    setGitRev = ''${final.pkgs.buildPackages.haskellBuildUtils}/bin/set-git-rev "${cardano-node.rev}" $out/bin/*'';
+                    setGitRev = ''${final.pkgs.buildPackages.haskellBuildUtils}/bin/set-git-rev "${self.rev}" $out/bin/*'';
                   in
                   nixpkgs.runCommand value.name
                     {
