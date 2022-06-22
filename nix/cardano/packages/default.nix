@@ -109,7 +109,7 @@ let
   inherit (project) index-state;
 
 in
-project.exesFrom ./packages-exes.nix // {
+project.exes // {
   inherit project;
   inherit (project.appendModule { packagesExes = { }; }) generatePackagesExesMat;
   inherit (project.hsPkgs.bech32.components.exes) bech32;
